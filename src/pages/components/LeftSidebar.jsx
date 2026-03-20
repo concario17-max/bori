@@ -12,6 +12,7 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
     isDesktopSidebarOpen: true,
   };
   const { isSidebarOpen, setIsSidebarOpen, isDesktopSidebarOpen } = uiContext;
+  const isSingleChapter = (chapters?.length ?? 0) <= 1;
 
   const paragraphIndices = React.useMemo(() => {
     const map = {};
@@ -38,6 +39,7 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
   }, [chapters, isPrayerPage]);
 
   const [expandedChapter, setExpandedChapter] = useState(() => {
+    if (isSingleChapter && chapters?.[0]?.id) return chapters[0].id;
     if (!activeParagraphId || !chapters) return null;
 
     for (const chapter of chapters) {
@@ -55,6 +57,13 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
   });
 
   React.useEffect(() => {
+    if (isSingleChapter && chapters?.[0]?.id) {
+      if (expandedChapter !== chapters[0].id) {
+        setExpandedChapter(chapters[0].id);
+      }
+      return;
+    }
+
     if (!activeParagraphId || !chapters) return;
 
     let targetChapterId = null;
@@ -76,11 +85,15 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
     if (targetChapterId && targetChapterId !== expandedChapter) {
       setExpandedChapter(targetChapterId);
     }
-  }, [activeParagraphId, chapters, expandedChapter]);
+  }, [activeParagraphId, chapters, expandedChapter, isSingleChapter]);
 
-  const toggleChapter = React.useCallback((chapterId) => {
-    setExpandedChapter((prev) => (prev === chapterId ? null : chapterId));
-  }, []);
+  const toggleChapter = React.useCallback(
+    (chapterId) => {
+      if (isSingleChapter) return;
+      setExpandedChapter((prev) => (prev === chapterId ? null : chapterId));
+    },
+    [isSingleChapter],
+  );
 
   return (
     <SidebarLayout
@@ -94,12 +107,14 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
       <SidebarHeader setIsSidebarOpen={setIsSidebarOpen} />
 
       <div className="flex min-h-0 flex-1 flex-col bg-white/80 dark:bg-dark-bg/95">
-        <SidebarChapterList
-          chapters={chapters}
-          expandedChapter={expandedChapter}
-          toggleChapter={toggleChapter}
-          onSelectParagraph={onSelectParagraph}
-        />
+        {!isSingleChapter ? (
+          <SidebarChapterList
+            chapters={chapters}
+            expandedChapter={expandedChapter}
+            toggleChapter={toggleChapter}
+            onSelectParagraph={onSelectParagraph}
+          />
+        ) : null}
 
         <SidebarVerseList
           chapters={chapters}

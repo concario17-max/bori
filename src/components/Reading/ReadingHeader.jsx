@@ -19,17 +19,19 @@ function ReadingHeader({
   paragraphTitle,
 }) {
   const sectionLabel = chapterTitle || (verseStr ? `Chapter ${chapterStr}` : 'Text');
-  const entryLabel =
-    paragraphTitle ||
-    (verseStr ? `문단 ${globalIndex || `${chapterStr}-${verseStr}`}` : `문단 ${globalIndex || verseId}`);
+  const entryLabel = paragraphTitle || `Section ${globalIndex || `${chapterStr}-${verseStr}` || verseId}`;
 
   return (
-    <div className="mb-6 flex flex-col items-center justify-center pt-2 sm:mb-8 sm:pt-4">
-      <div className="inline-flex items-center gap-3 rounded-full border border-gold-border/30 bg-white/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-text-secondary/80 shadow-[0_10px_30px_rgba(166,139,92,0.08)] backdrop-blur-md dark:border-dark-border/60 dark:bg-dark-surface/70 dark:text-dark-text-secondary/80 sm:px-5">
-        <span>{sectionLabel}</span>
-        <span className="text-gold-primary/60 dark:text-gold-light/60">·</span>
-        <span className="text-text-primary dark:text-dark-text-primary">{entryLabel}</span>
-      </div>
+    <div className="mb-8 pt-2 text-center sm:mb-10 sm:pt-4">
+      <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.38em] text-gold-deep/70 dark:text-gold-light/65">
+        {sectionLabel}
+      </p>
+      <h2 className="mt-4 font-korean text-[1.6rem] font-semibold tracking-[-0.02em] text-text-primary dark:text-dark-text-primary sm:text-[2rem]">
+        {entryLabel}
+      </h2>
+      <p className="mt-3 font-inter text-[11px] tracking-[0.22em] text-text-secondary/70 dark:text-dark-text-secondary/75">
+        SECTION {globalIndex || verseId}
+      </p>
     </div>
   );
 }
