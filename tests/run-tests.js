@@ -41,6 +41,7 @@ async function runParserTests() {
   const toc = createDefaultToc(koreanEntries);
   const chapters = createReadingData(koreanEntries, englishEntries, toc);
   const flatParagraphs = flattenParagraphs(chapters);
+  const englishParagraph = flatParagraphs[63]?.text.english ?? '';
 
   assert.equal(koreanEntries.length, 70);
   assert.equal(englishEntries.size, 68);
@@ -53,7 +54,11 @@ async function runParserTests() {
   assert.equal(flatParagraphs.at(-1)?.paragraphNumber, 70);
   assert.equal(flatParagraphs[0]?.title, '귀경게 및 도입부');
   assert.equal(flatParagraphs[1]?.title, '제1송');
-  assert.match(flatParagraphs[1]?.text.english ?? '', /Geshe Sonam Rinchen:/);
+  assert.match(flatParagraphs[1]?.text.english ?? '', /^Geshe Sonam Rinchen\n/);
+  assert.doesNotMatch(englishParagraph, /^Geshe Sonam Rinchen:\s*63/m);
+  assert.doesNotMatch(englishParagraph, /^Richard Sherburne:\s*63/m);
+  assert.match(englishParagraph, /^Geshe Sonam Rinchen\n/m);
+  assert.match(englishParagraph, /^Richard Sherburne\n/m);
   assert.equal(flatParagraphs.at(-1)?.title, '결어');
 }
 

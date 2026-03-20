@@ -61,6 +61,14 @@ export function parseKoreanEntries(source) {
 }
 
 /**
+ * @param {string} text
+ * @returns {string}
+ */
+function stripLeadingVerseNumber(text) {
+  return normalizeWhitespace(text).replace(/^\d+\s+/, '');
+}
+
+/**
  * @param {string} source
  * @returns {Map<number, string>}
  */
@@ -78,7 +86,10 @@ export function parseEnglishEntries(source) {
       .map((line) => {
         const translationMatch = line.match(/^\*\s*\d+\.\s*([^:]+):\s*(.*)$/);
         if (!translationMatch) return null;
-        return `${normalizeWhitespace(translationMatch[1])}: ${normalizeWhitespace(translationMatch[2])}`;
+
+        const translator = normalizeWhitespace(translationMatch[1]);
+        const text = stripLeadingVerseNumber(translationMatch[2]);
+        return `${translator}\n${text}`;
       })
       .filter(Boolean)
       .join('\n\n');
