@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 function SidebarHeader({ setIsSidebarOpen }) {
   return (
     <div className="flex shrink-0 items-center justify-between border-b border-gold-border/30 p-4 dark:border-[#333] lg:hidden">
-      <span className="font-crimson text-lg font-bold text-text-primary dark:text-dark-text-primary">
+      <span className="font-korean text-lg font-semibold text-text-primary dark:text-dark-text-primary">
         보리도등론
       </span>
       <button

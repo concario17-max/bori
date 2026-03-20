@@ -13,6 +13,7 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
   };
   const { isSidebarOpen, setIsSidebarOpen, isDesktopSidebarOpen } = uiContext;
   const isSingleChapter = (chapters?.length ?? 0) <= 1;
+  const singleChapter = isSingleChapter ? chapters?.[0] ?? null : null;
 
   const paragraphIndices = React.useMemo(() => {
     const map = {};
@@ -123,6 +124,8 @@ const LeftSidebar = ({ chapters, onSelectParagraph, activeParagraphId, isPrayerP
           paragraphIndices={paragraphIndices}
           onSelectParagraph={onSelectParagraph}
           setIsSidebarOpen={setIsSidebarOpen}
+          title={singleChapter?.title ?? '보리도등론'}
+          count={singleChapter?.paragraphs?.length ?? 0}
         />
       </div>
     </SidebarLayout>
