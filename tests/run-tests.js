@@ -12,12 +12,12 @@ import {
 import {
   BODHI_TITLE,
   COMMENTARY_TITLE,
+  createBodhiGroup,
   createCommentaryGroup,
-  createDefaultToc,
-  createReadingData,
+  createBodhiSections,
+  createCommentarySections,
   flattenParagraphs,
   parseCommentaryEntries,
-  parseCommentaryToc,
   parseEnglishEntries,
   parseKoreanEntries,
 } from '../src/lib/parseThreeBodiesCore.js';
@@ -40,47 +40,49 @@ function runDesktopFrameTests() {
 async function runParserTests() {
   const koreanSource = await loadFixture('1. 보리 티벳-한글.txt');
   const englishSource = await loadFixture('2. 보리 영어 2개.txt');
-  const commentaryTocSource = await loadFixture('3.보리난처석 목차.txt');
   const commentarySource = await loadFixture('4.보리난처석 영-한.txt');
 
   const koreanEntries = parseKoreanEntries(koreanSource);
   const englishEntries = parseEnglishEntries(englishSource);
-  const chapters = createReadingData(koreanEntries, englishEntries, createDefaultToc(koreanEntries));
   const commentaryEntries = parseCommentaryEntries(commentarySource);
-  const commentaryToc = parseCommentaryToc(commentaryTocSource);
-  const commentaryGroup = createCommentaryGroup(commentaryEntries, commentaryToc);
-  const flatParagraphs = flattenParagraphs([...chapters, commentaryGroup]);
+  const bodhiGroup = createBodhiGroup(koreanEntries, englishEntries);
+  const commentaryGroup = createCommentaryGroup(commentaryEntries);
+  const flatParagraphs = flattenParagraphs([bodhiGroup, commentaryGroup]);
+  const bodhiSections = createBodhiSections();
+  const commentarySections = createCommentarySections();
 
-  assert.equal(chapters.length, 1);
-  assert.equal(chapters[0].title, BODHI_TITLE);
-  assert.equal(chapters[0].paragraphs?.length, 70);
+  assert.equal(bodhiGroup.title, BODHI_TITLE);
+  assert.equal(bodhiGroup.isGroup, true);
+  assert.equal(bodhiGroup.subchapters?.length, 2);
+  assert.equal(bodhiSections[0].label, '귀경게 및 도입부\n(문단 1)');
+  assert.equal(bodhiSections[1].label, '게송\n(문단 2 - 문단 70)');
+  assert.equal(bodhiGroup.subchapters?.[0]?.paragraphs?.length, 1);
+  assert.equal(bodhiGroup.subchapters?.[1]?.paragraphs?.length, 69);
 
-  assert.equal(commentaryEntries.length, 545);
-  assert.equal(commentaryToc[0].title, '귀경게와 저술의 동기');
-  assert.equal(commentaryToc[0].start, 1);
-  assert.equal(commentaryToc[0].end, 15);
-  assert.equal(commentaryToc[3].title, '제2편 상사의 바라밀다승 / 1. 삼보에 귀의하기');
-  assert.equal(commentaryToc[3].start, 22);
-  assert.equal(commentaryToc[3].end, 23);
   assert.equal(commentaryGroup.title, COMMENTARY_TITLE);
   assert.equal(commentaryGroup.isGroup, true);
-  assert.equal(commentaryGroup.subchapters?.length, commentaryToc.length);
-  assert.equal(commentaryGroup.subchapters?.[0]?.paragraphs?.length, 15);
-  assert.equal(commentaryGroup.subchapters?.[0]?.paragraphs?.[0]?.text.english.startsWith('I pay homage'), true);
+  assert.equal(commentaryGroup.subchapters?.length, commentarySections.length);
+  assert.equal(commentarySections[0].label, '귀경게와 저술의 동기\n본문 (문단 1 - 문단 15)');
+  assert.equal(commentarySections[2].label, '제2편 상사의 바라밀다승\n1장. 상사의 바른방편\n서문 (문단 20 - 문단 21)');
+  assert.equal(
+    commentarySections[3].label,
+    '제2편 상사의 바라밀다승\n1장. 상사의 바른방편\n1. 삼보에 귀의하기  (문단 22 - 문단 21)',
+  );
+  assert.equal(commentaryGroup.subchapters?.[0]?.paragraphs?.[0]?.paragraphNumber, 1);
   assert.equal(commentaryGroup.subchapters?.at(-1)?.paragraphs?.at(-1)?.paragraphNumber, 543);
 
-  assert.equal(flatParagraphs.length, 70 + 545);
-  assert.equal(flatParagraphs[0]?.chapterTitle, BODHI_TITLE);
+  assert.equal(flatParagraphs[0]?.chapterTitle, '귀경게 및 도입부');
+  assert.equal(flatParagraphs[1]?.chapterTitle, '게송');
   assert.equal(flatParagraphs[70]?.chapterTitle, '귀경게와 저술의 동기');
 }
 
 function runReadingStateTests() {
   const paragraphs = [
     {
-      id: '1.1',
+      id: 'bodhi.1.1',
       title: '귀경게 및 도입부',
       paragraphNumber: 1,
-      chapterTitle: BODHI_TITLE,
+      chapterTitle: '귀경게 및 도입부',
       text: {
         tibetan: 'a',
         pronunciation: '',
@@ -108,7 +110,7 @@ function runReadingStateTests() {
   );
   assert.equal(
     resolveStoredActiveParagraph('{bad json', paragraphs[0], paragraphs)?.id,
-    '1.1',
+    'bodhi.1.1',
   );
 }
 

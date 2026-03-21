@@ -17,7 +17,7 @@ const ChapterButton = ({ chapter, count, isExpanded, onClick, isSubchapter = fal
                 }`}
         >
             <div className="flex-1 pr-2 flex flex-col gap-0">
-                <span className={`text-[13px] leading-snug font-inter break-keep font-bold ${isExpanded ? 'text-[#1C2B36] dark:text-gold-light' : ''
+                <span className={`whitespace-pre-line text-[13px] leading-snug font-inter break-keep font-bold ${isExpanded ? 'text-[#1C2B36] dark:text-gold-light' : ''
                     } ${isSubchapter ? 'font-medium tracking-wide' : 'tracking-tight'}`}>
                     {chapter.chapterName}
                 </span>
