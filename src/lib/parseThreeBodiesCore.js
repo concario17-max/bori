@@ -1,6 +1,9 @@
 /** @typedef {import('../types').ReadingChapter} ReadingChapter */
 /** @typedef {import('../types').ReadingParagraph} ReadingParagraph */
 
+const BODHI_TITLE = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860';
+const COMMENTARY_TITLE = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860 \uB09C\uCC98\uC11D';
+
 /**
  * @typedef ParsedKoreanEntry
  * @property {number} number
@@ -11,13 +14,18 @@
  */
 
 /**
- * @typedef ParsedTocEntry
+ * @typedef ParsedCommentaryEntry
+ * @property {number} number
+ * @property {string} english
+ * @property {string} korean
+ */
+
+/**
+ * @typedef ParsedCommentaryTocEntry
  * @property {string} title
  * @property {number} start
  * @property {number} end
  */
-
-const BODHI_TITLE = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860';
 
 /**
  * @param {string} value
@@ -88,7 +96,6 @@ export function parseEnglishEntries(source) {
       .map((line) => {
         const translationMatch = line.match(/^\*\s*\d+\.\s*([^:]+):\s*(.*)$/);
         if (!translationMatch) return null;
-
         const translator = normalizeWhitespace(translationMatch[1]);
         const text = stripLeadingVerseNumber(translationMatch[2]);
         return `${translator}\n${text}`;
@@ -104,40 +111,93 @@ export function parseEnglishEntries(source) {
 
 /**
  * @param {string} source
- * @returns {ParsedTocEntry[]}
+ * @returns {ParsedCommentaryEntry[]}
  */
-export function parseToc(source) {
-  const pattern = /(.*?)\s*\([^0-9]*(\d+)(?:\s*~\s*[^0-9]*(\d+))?\)/g;
-  /** @type {ParsedTocEntry[]} */
-  const chapters = [];
+export function parseCommentaryEntries(source) {
+  const pattern = /\[문단\s*(\d+)\]\s*([\s\S]*?)(?=\n\s*\[문단\s*\d+\]|\s*$)/g;
+  /** @type {ParsedCommentaryEntry[]} */
+  const entries = [];
   let match;
 
   while ((match = pattern.exec(source)) !== null) {
-    chapters.push({
-      title: normalizeWhitespace(match[1]),
-      start: Number(match[2]),
-      end: match[3] ? Number(match[3]) : Number(match[2]),
+    const number = Number(match[1]);
+    const block = match[2];
+    const englishMatch = block.match(/English:\s*([\s\S]*?)\n\s*Korean:/);
+    const koreanMatch = block.match(/Korean:\s*([\s\S]*?)\s*$/);
+
+    entries.push({
+      number,
+      english: englishMatch ? normalizeWhitespace(englishMatch[1]) : '',
+      korean: koreanMatch ? normalizeWhitespace(koreanMatch[1]) : '',
     });
   }
 
-  return chapters;
+  return entries;
 }
 
 /**
- * @param {ParsedTocEntry[]} chapters
- * @returns {ParsedTocEntry[]}
+ * @param {string} source
+ * @returns {ParsedCommentaryTocEntry[]}
  */
-export function normalizeReadingToc(chapters) {
-  return chapters;
+export function parseCommentaryToc(source) {
+  const lines = source
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  /** @type {ParsedCommentaryTocEntry[]} */
+  const entries = [];
+  /** @type {string[]} */
+  const headingStack = [];
+
+  for (const line of lines) {
+    const rangeMatch = line.match(/^(.*?)(?:\s*\(|\s{2,})(?:본문\s*)?문단\s*(\d+)\s*-\s*문단\s*(\d+)\)?/);
+    if (!rangeMatch) {
+      headingStack.push(line.replace(/\*+/g, '').trim());
+      continue;
+    }
+
+    const rawTitle = rangeMatch[1].replace(/\*+/g, '').trim().replace(/[.,]\s*$/, '');
+    const start = Number(rangeMatch[2]);
+    const end = Number(rangeMatch[3]);
+    const parentContext = headingStack.at(-1) ?? '';
+    let title = rawTitle;
+
+    if (rawTitle === '본문' && parentContext) {
+      title = parentContext;
+    } else if (/^\d+장/.test(rawTitle) || /^\d+[.,]/.test(rawTitle)) {
+      const majorContext = [...headingStack].reverse().find((item) => /^제\d+편/.test(item)) ?? '';
+      title = majorContext ? `${majorContext} / ${rawTitle}` : rawTitle;
+    }
+
+    entries.push({ title, start, end });
+  }
+
+  return normalizeCommentaryToc(entries);
+}
+
+/**
+ * @param {ParsedCommentaryTocEntry[]} entries
+ * @returns {ParsedCommentaryTocEntry[]}
+ */
+export function normalizeCommentaryToc(entries) {
+  return entries.map((entry, index) => {
+    if (entry.end >= entry.start) return entry;
+    const next = entries[index + 1];
+    return {
+      ...entry,
+      end: next && next.start > entry.start ? next.start - 1 : entry.start,
+    };
+  });
 }
 
 /**
  * @param {ParsedKoreanEntry[]} koreanEntries
- * @returns {ParsedTocEntry[]}
+ * @returns {ParsedCommentaryTocEntry[]}
  */
 export function createDefaultToc(koreanEntries) {
   if (koreanEntries.length === 0) return [];
-
   return [
     {
       title: BODHI_TITLE,
@@ -150,7 +210,7 @@ export function createDefaultToc(koreanEntries) {
 /**
  * @param {ParsedKoreanEntry[]} koreanEntries
  * @param {Map<number, string>} englishEntries
- * @param {ParsedTocEntry[]} toc
+ * @param {ParsedCommentaryTocEntry[]} toc
  * @returns {ReadingChapter[]}
  */
 export function createReadingData(koreanEntries, englishEntries, toc) {
@@ -181,9 +241,48 @@ export function createReadingData(koreanEntries, englishEntries, toc) {
 }
 
 /**
+ * @param {ParsedCommentaryEntry[]} entries
+ * @param {ParsedCommentaryTocEntry[]} toc
+ * @returns {ReadingChapter}
+ */
+export function createCommentaryGroup(entries, toc) {
+  return {
+    id: 'commentary',
+    chapterName: COMMENTARY_TITLE,
+    title: COMMENTARY_TITLE,
+    isGroup: true,
+    subchapters: toc.map((section, index) => ({
+      id: String(index + 1),
+      chapterName: section.title,
+      title: section.title,
+      paragraphs: entries
+        .filter((entry) => entry.number >= section.start && entry.number <= section.end)
+        .map((entry, paragraphIndex) => ({
+          id: `commentary.${index + 1}.${paragraphIndex + 1}`,
+          title: `문단 ${entry.number}`,
+          paragraphNumber: entry.number,
+          chapterTitle: section.title,
+          text: {
+            tibetan: '',
+            pronunciation: '',
+            english: entry.english,
+            korean: entry.korean,
+          },
+        })),
+    })),
+  };
+}
+
+/**
  * @param {ReadingChapter[]} chapters
  * @returns {ReadingParagraph[]}
  */
 export function flattenParagraphs(chapters) {
-  return chapters.flatMap((chapter) => chapter.paragraphs);
+  return chapters.flatMap((chapter) =>
+    chapter.isGroup && chapter.subchapters
+      ? chapter.subchapters.flatMap((subchapter) => subchapter.paragraphs ?? [])
+      : chapter.paragraphs ?? [],
+  );
 }
+
+export { BODHI_TITLE, COMMENTARY_TITLE };

@@ -21,7 +21,9 @@ export interface ReadingChapter {
   id: string;
   chapterName: string;
   title: string;
-  paragraphs: ReadingParagraph[];
+  paragraphs?: ReadingParagraph[];
+  isGroup?: boolean;
+  subchapters?: ReadingChapter[];
 }
 
 export interface UIContextValue {

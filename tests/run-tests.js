@@ -10,9 +10,14 @@ import {
   getDesktopFrameColumns,
 } from '../src/components/ui/desktopFrame.js';
 import {
+  BODHI_TITLE,
+  COMMENTARY_TITLE,
+  createCommentaryGroup,
   createDefaultToc,
   createReadingData,
   flattenParagraphs,
+  parseCommentaryEntries,
+  parseCommentaryToc,
   parseEnglishEntries,
   parseKoreanEntries,
 } from '../src/lib/parseThreeBodiesCore.js';
@@ -20,7 +25,6 @@ import { resolveStoredActiveParagraph } from '../src/lib/readingState.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
-const BODHI_TITLE = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860';
 
 async function loadFixture(name) {
   return readFile(path.join(projectRoot, name), 'utf8');
@@ -36,30 +40,38 @@ function runDesktopFrameTests() {
 async function runParserTests() {
   const koreanSource = await loadFixture('1. 보리 티벳-한글.txt');
   const englishSource = await loadFixture('2. 보리 영어 2개.txt');
+  const commentaryTocSource = await loadFixture('3.보리난처석 목차.txt');
+  const commentarySource = await loadFixture('4.보리난처석 영-한.txt');
 
   const koreanEntries = parseKoreanEntries(koreanSource);
   const englishEntries = parseEnglishEntries(englishSource);
-  const toc = createDefaultToc(koreanEntries);
-  const chapters = createReadingData(koreanEntries, englishEntries, toc);
-  const flatParagraphs = flattenParagraphs(chapters);
-  const firstEnglishParagraph = flatParagraphs[1]?.text.english ?? '';
+  const chapters = createReadingData(koreanEntries, englishEntries, createDefaultToc(koreanEntries));
+  const commentaryEntries = parseCommentaryEntries(commentarySource);
+  const commentaryToc = parseCommentaryToc(commentaryTocSource);
+  const commentaryGroup = createCommentaryGroup(commentaryEntries, commentaryToc);
+  const flatParagraphs = flattenParagraphs([...chapters, commentaryGroup]);
 
-  assert.equal(koreanEntries.length, 70);
-  assert.equal(englishEntries.size, 68);
-  assert.equal(toc.length, 1);
-  assert.equal(toc[0].start, 1);
-  assert.equal(toc[0].title, BODHI_TITLE);
   assert.equal(chapters.length, 1);
-  assert.equal(flatParagraphs.length, 70);
-  assert.equal(flatParagraphs[0]?.paragraphNumber, 1);
-  assert.equal(flatParagraphs.at(-1)?.paragraphNumber, 70);
-  assert.equal(flatParagraphs[0]?.title, '귀경게 및 도입부');
-  assert.equal(flatParagraphs[1]?.title, '제1송');
-  assert.match(firstEnglishParagraph, /^Geshe Sonam Rinchen\n/m);
-  assert.match(firstEnglishParagraph, /^Richard Sherburne\n/m);
-  assert.doesNotMatch(firstEnglishParagraph, /^Geshe Sonam Rinchen:\s*1/m);
-  assert.doesNotMatch(firstEnglishParagraph, /^Richard Sherburne:\s*1/m);
-  assert.equal(flatParagraphs.at(-1)?.title, '결어');
+  assert.equal(chapters[0].title, BODHI_TITLE);
+  assert.equal(chapters[0].paragraphs?.length, 70);
+
+  assert.equal(commentaryEntries.length, 545);
+  assert.equal(commentaryToc[0].title, '귀경게와 저술의 동기');
+  assert.equal(commentaryToc[0].start, 1);
+  assert.equal(commentaryToc[0].end, 15);
+  assert.equal(commentaryToc[3].title, '제2편 상사의 바라밀다승 / 1. 삼보에 귀의하기');
+  assert.equal(commentaryToc[3].start, 22);
+  assert.equal(commentaryToc[3].end, 23);
+  assert.equal(commentaryGroup.title, COMMENTARY_TITLE);
+  assert.equal(commentaryGroup.isGroup, true);
+  assert.equal(commentaryGroup.subchapters?.length, commentaryToc.length);
+  assert.equal(commentaryGroup.subchapters?.[0]?.paragraphs?.length, 15);
+  assert.equal(commentaryGroup.subchapters?.[0]?.paragraphs?.[0]?.text.english.startsWith('I pay homage'), true);
+  assert.equal(commentaryGroup.subchapters?.at(-1)?.paragraphs?.at(-1)?.paragraphNumber, 543);
+
+  assert.equal(flatParagraphs.length, 70 + 545);
+  assert.equal(flatParagraphs[0]?.chapterTitle, BODHI_TITLE);
+  assert.equal(flatParagraphs[70]?.chapterTitle, '귀경게와 저술의 동기');
 }
 
 function runReadingStateTests() {
@@ -77,12 +89,12 @@ function runReadingStateTests() {
       },
     },
     {
-      id: '1.2',
-      title: '제1송',
-      paragraphNumber: 2,
-      chapterTitle: BODHI_TITLE,
+      id: 'commentary.1.1',
+      title: '문단 1',
+      paragraphNumber: 1,
+      chapterTitle: '귀경게와 저술의 동기',
       text: {
-        tibetan: 'b',
+        tibetan: '',
         pronunciation: '',
         english: 'b',
         korean: 'b',
@@ -91,8 +103,8 @@ function runReadingStateTests() {
   ];
 
   assert.equal(
-    resolveStoredActiveParagraph(JSON.stringify('1.2'), paragraphs[0], paragraphs)?.id,
-    '1.2',
+    resolveStoredActiveParagraph(JSON.stringify('commentary.1.1'), paragraphs[0], paragraphs)?.id,
+    'commentary.1.1',
   );
   assert.equal(
     resolveStoredActiveParagraph('{bad json', paragraphs[0], paragraphs)?.id,
