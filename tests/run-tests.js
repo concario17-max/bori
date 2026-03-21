@@ -20,6 +20,7 @@ import { resolveStoredActiveParagraph } from '../src/lib/readingState.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
+const BODHI_TITLE = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860';
 
 async function loadFixture(name) {
   return readFile(path.join(projectRoot, name), 'utf8');
@@ -41,24 +42,23 @@ async function runParserTests() {
   const toc = createDefaultToc(koreanEntries);
   const chapters = createReadingData(koreanEntries, englishEntries, toc);
   const flatParagraphs = flattenParagraphs(chapters);
-  const englishParagraph = flatParagraphs[63]?.text.english ?? '';
+  const firstEnglishParagraph = flatParagraphs[1]?.text.english ?? '';
 
   assert.equal(koreanEntries.length, 70);
   assert.equal(englishEntries.size, 68);
   assert.equal(toc.length, 1);
   assert.equal(toc[0].start, 1);
-  assert.equal(toc[0].title, '보리도등론');
+  assert.equal(toc[0].title, BODHI_TITLE);
   assert.equal(chapters.length, 1);
   assert.equal(flatParagraphs.length, 70);
   assert.equal(flatParagraphs[0]?.paragraphNumber, 1);
   assert.equal(flatParagraphs.at(-1)?.paragraphNumber, 70);
   assert.equal(flatParagraphs[0]?.title, '귀경게 및 도입부');
   assert.equal(flatParagraphs[1]?.title, '제1송');
-  assert.match(flatParagraphs[1]?.text.english ?? '', /^Geshe Sonam Rinchen\n/);
-  assert.doesNotMatch(englishParagraph, /^Geshe Sonam Rinchen:\s*63/m);
-  assert.doesNotMatch(englishParagraph, /^Richard Sherburne:\s*63/m);
-  assert.match(englishParagraph, /^Geshe Sonam Rinchen\n/m);
-  assert.match(englishParagraph, /^Richard Sherburne\n/m);
+  assert.match(firstEnglishParagraph, /^Geshe Sonam Rinchen\n/m);
+  assert.match(firstEnglishParagraph, /^Richard Sherburne\n/m);
+  assert.doesNotMatch(firstEnglishParagraph, /^Geshe Sonam Rinchen:\s*1/m);
+  assert.doesNotMatch(firstEnglishParagraph, /^Richard Sherburne:\s*1/m);
   assert.equal(flatParagraphs.at(-1)?.title, '결어');
 }
 
@@ -68,7 +68,7 @@ function runReadingStateTests() {
       id: '1.1',
       title: '귀경게 및 도입부',
       paragraphNumber: 1,
-      chapterTitle: '보리도등론',
+      chapterTitle: BODHI_TITLE,
       text: {
         tibetan: 'a',
         pronunciation: '',
@@ -80,7 +80,7 @@ function runReadingStateTests() {
       id: '1.2',
       title: '제1송',
       paragraphNumber: 2,
-      chapterTitle: '보리도등론',
+      chapterTitle: BODHI_TITLE,
       text: {
         tibetan: 'b',
         pronunciation: '',

@@ -17,6 +17,8 @@
  * @property {number} end
  */
 
+const BODHI_TITLE = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860';
+
 /**
  * @param {string} value
  * @returns {string}
@@ -30,7 +32,7 @@ function normalizeWhitespace(value) {
  * @returns {number | null}
  */
 function parseVerseNumber(title) {
-  const match = title.match(/^제\s*(\d+)\s*송$/);
+  const match = title.match(/(\d+)/);
   return match ? Number(match[1]) : null;
 }
 
@@ -40,7 +42,7 @@ function parseVerseNumber(title) {
  */
 export function parseKoreanEntries(source) {
   const pattern =
-    /\[([^\]]+)\]\s*\* 티베트어:\s*([\s\S]*?)\s*\* 한글 번역:\s*([\s\S]*?)(?=\n\s*\[[^\]]+\]|\s*$)/g;
+    /\[([^\]]+)\]\s*\*\s*[^:]+:\s*([\s\S]*?)\s*\*\s*[^:]+:\s*([\s\S]*?)(?=\n\s*\[[^\]]+\]|\s*$)/g;
   /** @type {ParsedKoreanEntry[]} */
   const entries = [];
   let match;
@@ -73,7 +75,7 @@ function stripLeadingVerseNumber(text) {
  * @returns {Map<number, string>}
  */
 export function parseEnglishEntries(source) {
-  const pattern = /\[(\d+)번 문단\]\s*([\s\S]*?)(?=\n\s*\[\d+번 문단\]|\s*$)/g;
+  const pattern = /\[(\d+)[^\]]*\]\s*([\s\S]*?)(?=\n\s*\[\d+[^\]]*\]|\s*$)/g;
   const entries = new Map();
   let match;
 
@@ -138,7 +140,7 @@ export function createDefaultToc(koreanEntries) {
 
   return [
     {
-      title: '보리도등론',
+      title: BODHI_TITLE,
       start: koreanEntries[0].number,
       end: koreanEntries[koreanEntries.length - 1].number,
     },
