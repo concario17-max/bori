@@ -5,7 +5,7 @@ import { DESKTOP_FRAME_COLUMNS_DEFAULT } from './ui/desktopFrame';
 
 /** @typedef {import('../types').UIContextValue} UIContextValue */
 
-const TITLE_TEXT = '보리도등론';
+const TITLE_TEXT = '\uBCF4\uB9AC\uB3C4\uB4F1\uB860';
 
 /**
  * @returns {UIContextValue}
@@ -41,7 +41,9 @@ function Header() {
     '--desktop-frame-columns': DESKTOP_FRAME_COLUMNS_DEFAULT,
   };
 
-  const commentaryLabel = isCommentaryOpen ? '해설 패널 닫기' : '해설 패널 열기';
+  const commentaryLabel = isCommentaryOpen
+    ? '\uD574\uC124 \uD328\uB110 \uB2EB\uAE30'
+    : '\uD574\uC124 \uD328\uB110 \uC5F4\uAE30';
 
   return (
     <header className="fixed left-0 top-0 z-[60] h-16 w-full border-b border-sand-tertiary bg-white/80 backdrop-blur-md dark:border-dark-border/60 dark:bg-dark-bg/75">
@@ -51,7 +53,7 @@ function Header() {
             type="button"
             onClick={ui.toggleSidebar}
             className="rounded-lg p-2 text-gold-primary transition-colors hover:bg-gold-surface"
-            aria-label="목차 열기"
+            aria-label="\uBAA9\uCC28 \uC5F4\uAE30"
           >
             <Menu className="h-6 w-6" />
           </button>
@@ -59,7 +61,7 @@ function Header() {
           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-primary/20 bg-white/70 text-gold-primary dark:border-dark-border/60 dark:bg-dark-surface/60 dark:text-gold-light">
             <BookOpenText className="h-5 w-5" />
           </span>
-          <span className="truncate font-serif text-[13px] font-bold tracking-[0.03em] text-charcoal-main dark:text-dark-text-primary sm:text-[16px]">
+          <span className="truncate font-korean text-[13px] font-semibold tracking-[0.01em] text-charcoal-main dark:text-dark-text-primary sm:text-[16px]">
             {TITLE_TEXT}
           </span>
         </div>
@@ -72,14 +74,20 @@ function Header() {
             aria-label={commentaryLabel}
           >
             <MessageSquareText className="h-4 w-4" />
-            <span className="hidden text-xs font-semibold tracking-wide sm:inline">해설</span>
+            <span className="hidden text-xs font-semibold tracking-wide sm:inline">
+              {'\uD574\uC124'}
+            </span>
           </button>
 
           <button
             type="button"
             onClick={ui.toggleTheme}
             className="inline-flex items-center justify-center rounded-full border border-gold-primary/20 bg-white/70 p-2 text-gold-primary transition-colors hover:bg-gold-surface dark:border-dark-border/60 dark:bg-dark-surface/60 dark:text-gold-light"
-            aria-label={ui.isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+            aria-label={
+              ui.isDarkMode
+                ? '\uB77C\uC774\uD2B8 \uBAA8\uB4DC\uB85C \uC804\uD658'
+                : '\uB2E4\uD06C \uBAA8\uB4DC\uB85C \uC804\uD658'
+            }
           >
             <ThemeIcon className="h-4 w-4" />
           </button>
@@ -93,7 +101,7 @@ function Header() {
               type="button"
               onClick={ui.toggleSidebar}
               className="rounded-lg p-2 text-gold-primary transition-colors hover:bg-gold-surface"
-              aria-label="목차 열기"
+              aria-label="\uBAA9\uCC28 \uC5F4\uAE30"
             >
               <Menu className="h-6 w-6" />
             </button>
@@ -101,7 +109,7 @@ function Header() {
             <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-primary/20 bg-white/70 text-gold-primary dark:border-dark-border/60 dark:bg-dark-surface/60 dark:text-gold-light">
               <BookOpenText className="h-5 w-5" />
             </span>
-            <span className="truncate font-serif text-[16px] font-bold tracking-[0.03em] text-charcoal-main dark:text-dark-text-primary">
+            <span className="truncate font-korean text-[16px] font-semibold tracking-[0.01em] text-charcoal-main dark:text-dark-text-primary">
               {TITLE_TEXT}
             </span>
           </div>
@@ -114,14 +122,18 @@ function Header() {
               aria-label={commentaryLabel}
             >
               <MessageSquareText className="h-4 w-4" />
-              <span className="text-xs font-semibold tracking-wide">해설</span>
+              <span className="text-xs font-semibold tracking-wide">{'\uD574\uC124'}</span>
             </button>
 
             <button
               type="button"
               onClick={ui.toggleTheme}
               className="inline-flex items-center justify-center rounded-full border border-gold-primary/20 bg-white/70 p-2 text-gold-primary transition-colors hover:bg-gold-surface dark:border-dark-border/60 dark:bg-dark-surface/60 dark:text-gold-light"
-              aria-label={ui.isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+              aria-label={
+                ui.isDarkMode
+                  ? '\uB77C\uC774\uD2B8 \uBAA8\uB4DC\uB85C \uC804\uD658'
+                  : '\uB2E4\uD06C \uBAA8\uB4DC\uB85C \uC804\uD658'
+              }
             >
               <ThemeIcon className="h-4 w-4" />
             </button>
