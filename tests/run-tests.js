@@ -54,22 +54,25 @@ async function runParserTests() {
   assert.equal(bodhiGroup.title, BODHI_TITLE);
   assert.equal(bodhiGroup.isGroup, true);
   assert.equal(bodhiGroup.subchapters?.length, 2);
-  assert.equal(bodhiSections[0].label, '귀경게 및 도입부\n(문단 1)');
-  assert.equal(bodhiSections[1].label, '게송\n(문단 2 - 문단 70)');
+  assert.deepEqual(bodhiSections[0].headings, []);
+  assert.equal(bodhiSections[0].actionLabel, '귀경게 및 도입부');
+  assert.equal(bodhiSections[1].actionLabel, '게송');
   assert.equal(bodhiGroup.subchapters?.[0]?.paragraphs?.length, 1);
   assert.equal(bodhiGroup.subchapters?.[1]?.paragraphs?.length, 69);
+  assert.equal(bodhiGroup.subchapters?.[1]?.tocActionLabel, '게송');
 
   assert.equal(commentaryGroup.title, COMMENTARY_TITLE);
   assert.equal(commentaryGroup.isGroup, true);
   assert.equal(commentaryGroup.subchapters?.length, commentarySections.length);
-  assert.equal(commentarySections[0].label, '귀경게와 저술의 동기\n본문 (문단 1 - 문단 15)');
-  assert.equal(commentarySections[2].label, '제2편 상사의 바라밀다승\n1장. 상사의 바른방편\n서문 (문단 20 - 문단 21)');
-  assert.equal(
-    commentarySections[3].label,
-    '제2편 상사의 바라밀다승\n1장. 상사의 바른방편\n1. 삼보에 귀의하기  (문단 22 - 문단 21)',
-  );
+  assert.deepEqual(commentarySections[0].headings, []);
+  assert.equal(commentarySections[0].actionLabel, '귀경게와 저술의 동기');
+  assert.deepEqual(commentarySections[2].headings, ['제2편 상사의 바라밀다승', '1장. 상사의 바른방편']);
+  assert.equal(commentarySections[2].actionLabel, '서문');
+  assert.equal(commentarySections[3].actionLabel, '1. 삼보에 귀의하기');
   assert.equal(commentaryGroup.subchapters?.[0]?.paragraphs?.[0]?.paragraphNumber, 1);
   assert.equal(commentaryGroup.subchapters?.at(-1)?.paragraphs?.at(-1)?.paragraphNumber, 543);
+  assert.deepEqual(commentaryGroup.subchapters?.[2]?.tocHeadings, ['제2편 상사의 바라밀다승', '1장. 상사의 바른방편']);
+  assert.equal(commentaryGroup.subchapters?.[2]?.tocActionLabel, '서문');
 
   assert.equal(flatParagraphs[0]?.chapterTitle, '귀경게 및 도입부');
   assert.equal(flatParagraphs[1]?.chapterTitle, '게송');

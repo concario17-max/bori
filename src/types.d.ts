@@ -21,6 +21,8 @@ export interface ReadingChapter {
   id: string;
   chapterName: string;
   title: string;
+  tocHeadings?: string[];
+  tocActionLabel?: string;
   paragraphs?: ReadingParagraph[];
   isGroup?: boolean;
   subchapters?: ReadingChapter[];

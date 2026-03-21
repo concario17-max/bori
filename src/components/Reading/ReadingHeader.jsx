@@ -18,20 +18,24 @@ function ReadingHeader({
   chapterTitle,
   paragraphTitle,
 }) {
+  const isCommentary = typeof verseId === 'string' && verseId.startsWith('commentary.');
   const sectionLabel = chapterTitle || (verseStr ? `Chapter ${chapterStr}` : 'Text');
   const entryLabel = paragraphTitle || `Section ${globalIndex || `${chapterStr}-${verseStr}` || verseId}`;
+  const sectionIndexLabel = `SECTION ${globalIndex || verseId}`;
+  const commentaryLabel = sectionLabel;
+  const bodhiLabel = sectionLabel === entryLabel ? sectionLabel : `${sectionLabel} / ${entryLabel}`;
 
   return (
     <div className="mb-8 pt-2 text-center sm:mb-10 sm:pt-4">
-      <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.38em] text-gold-deep/70 dark:text-gold-light/65">
-        {sectionLabel}
-      </p>
-      <h2 className="mt-4 font-korean text-[1.6rem] font-semibold tracking-[-0.02em] text-text-primary dark:text-dark-text-primary sm:text-[2rem]">
-        {entryLabel}
-      </h2>
-      <p className="mt-3 font-inter text-[11px] tracking-[0.22em] text-text-secondary/70 dark:text-dark-text-secondary/75">
-        SECTION {globalIndex || verseId}
-      </p>
+      {isCommentary ? (
+        <p className="font-inter text-[10px] font-semibold tracking-[0.08em] text-gold-deep/70 dark:text-gold-light/65 sm:text-[11px]">
+          {`${commentaryLabel} / ${sectionIndexLabel}`}
+        </p>
+      ) : (
+        <p className="font-inter text-[10px] font-semibold tracking-[0.08em] text-gold-deep/70 dark:text-gold-light/65 sm:text-[11px]">
+          {bodhiLabel}
+        </p>
+      )}
     </div>
   );
 }
